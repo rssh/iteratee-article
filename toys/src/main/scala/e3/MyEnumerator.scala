@@ -33,6 +33,14 @@ class PutEOF[A] extends MyEnumerator[A]
 
 }
 
+object PutEOF
+{
+
+  def apply[A,S](it: MyIteratee[A,S]): MyIteratee[A,S] =
+       it.fold( k => k(Input.EOF), Function.const(it) )
+
+}
+
 
 case class ListEnumerator[A](l:List[A]) extends MyEnumerator[A]
 {
