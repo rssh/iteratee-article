@@ -21,7 +21,7 @@ trait MyEnumeratee[From,To]
         def runAll[X](it: MyIteratee[X,S]): S =
           it.fold(
             step => step(Input.EOF),
-            (in,S) => Done(in,S)
+            (in,s) => Done(in,s)
           ).fold(
              step => sys.error("iteratee is not done after after eof"),
              (in,S) => S
