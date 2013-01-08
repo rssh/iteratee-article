@@ -30,9 +30,9 @@ trait MyIteratee[A,S]
    */
   def next(inp: Input[A]): MyIteratee[A,S]
 
-  def isDone: Boolean = false
-
   def whenDone: Option[(Input[A],S)] = None
+
+  def isDone: Boolean = whenDone.isDefined
 
   def whenNext: Option[Input[A]=>MyIteratee[A,S]]  =
         if (isDone) None else Some(next(_))
