@@ -9,28 +9,29 @@ trait MyEnumeratee[From,To]
   def transform[S](it: MyIteratee[To,S]): MyIteratee[From,S] =
     new JoinIteratee(applyOn(it))
 
+  def join[S](it: MyIteratee[From, MyIteratee[To,S]]): MyIteratee[From,S] =
+     it match {
+       case Done(from,inner) => Done(from, runAll(inner))
+       case _ => JoinIteratee(it)
+     }
 
-  case class JoinIteratee[S](it:  MyIteratee[From, MyIteratee[To,S]]) 
+   case class JoinIteratee[S](it:  MyIteratee[From, MyIteratee[To,S]]) 
                                                    extends MyIteratee[From, S] 
-  {
+   {
 
-     def next(in: Input[From]) =
-      {
-        def runAll[X](it: MyIteratee[X,S]) = 
-          it match {
-            case Done(in,y) => y
-            case _ => it.next(Input.EOF) match {
-                        case Done(in,s) => s
-                        case _ => sys.error("iteratee is not done ager eof")
-                      }
+     def next(in: Input[From]) = join(it.next(in))
+
+   }
+
+
+   private def runAll[X,S](it: MyIteratee[X,S]) = 
+         it match {
+           case Done(in,y) => y
+           case _ => it.next(Input.EOF) match {
+                       case Done(in,s) => s
+                       case _ => sys.error("iteratee is not done ager eof")
+                     }
          }
-        it match {
-          case Done(inr,inner) => Done(in,runAll(inner))
-          case _ => new JoinIteratee(it.next(in))
-        } 
-      }
-
-    }
 
 }
 

@@ -14,6 +14,18 @@ trait MyEnumerator[A]
 
   def eof() = andThen(MyEnumerator.eof())
 
+  def map[B](f: A => B) = new MyEnumerator[B] {
+       def apply[S](it: MyIteratee[B,S]) =
+       {
+          val tr: MyIteratee[A,MyIteratee[B,S]] = MyEnumeratee.map(f).applyOn(it)
+          val applyed = enumeratorThis.apply(tr)
+          applyed.next(Input.EOF) match {
+              case Done(in,s) => s
+              case _ => sys.error("stream must be closed after input")
+          }
+       }
+  }
+
 
 }
 

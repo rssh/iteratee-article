@@ -44,6 +44,15 @@ trait MyIteratee[A,S]
        whenDone.map(x => onDone(x._1,x._2)) getOrElse sys.error("one of whenNext or whenDone must be defined") 
      )
 
+  // helper methods.
+
+  def andThen(x: MyIteratee[A,S]) = 
+         this match { 
+           case Done(in,s) => this
+           case _ => Compose(this,x)
+         }
+
+
 }
 
 case class Done[A,S](rest: Input[A], s: S) extends MyIteratee[A,S]
@@ -55,6 +64,16 @@ case class Done[A,S](rest: Input[A], s: S) extends MyIteratee[A,S]
 
   override def whenDone: Option[(Input[A],S)] = Some((rest,s))
 
+}
+
+// as alternative to Done
+object Next
+{
+  def unapply[A,S](x:MyIteratee[A,S]) = 
+       x match {
+         case Done(in,s) => None
+         case _ => Some(x)
+       }
 }
 
 case class Cont[A,S](f: Input[A] => MyIteratee[A,S]) extends MyIteratee[A,S]
@@ -72,4 +91,23 @@ case class Collect[A](s:String="") extends MyIteratee[A,String]
          case _ => Done(in,s)
    }          }
 }
+
+case class Compose[A,S](frs: MyIteratee[A,S],
+                        snd: MyIteratee[A,S]
+                       ) extends  MyIteratee[A,S]
+{
+
+  def next(x: Input[A]): MyIteratee[A,S] =
+   frs.next(x) match {
+     case Next(next) => Compose(next, snd)
+     case Done(in,s) => in match {
+                          case Input.EOF => Done(in,s)
+                          case Input.Empty => snd
+                          case Input.El(a) => PutOne(a)(snd)
+                        }
+   }
+
+}
+
+
 
