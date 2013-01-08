@@ -24,16 +24,15 @@ trait MyIteratee[A,S]
 {
 
   iterateeThis =>
-
+ 
+  /**
+   * let's assume then by default our iteratee do something
+   */
   def next(inp: Input[A]): MyIteratee[A,S]
 
-  def isDone: Boolean = whenDone.isDefined
+  def isDone: Boolean = false
 
-  def whenDone: Option[(Input[A],S)] =
-       this match {
-         case Done(rest,s) => Some((rest,s))
-         case _ => None
-       }
+  def whenDone: Option[(Input[A],S)] = None
 
   def whenNext: Option[Input[A]=>MyIteratee[A,S]]  =
         if (isDone) None else Some(next(_))
@@ -55,6 +54,7 @@ trait MyIteratee[A,S]
 
 }
 
+/**
 case class Done[A,S](rest: Input[A], s: S) extends MyIteratee[A,S]
 {
 
@@ -63,6 +63,28 @@ case class Done[A,S](rest: Input[A], s: S) extends MyIteratee[A,S]
   override def isDone: Boolean = true
 
   override def whenDone: Option[(Input[A],S)] = Some((rest,s))
+
+}
+**/
+
+class Done[A,S](rest: Input[A], s:S) extends MyIteratee[A,S]
+{
+
+  def next(inp: Input[A]) = this
+
+  override def isDone: Boolean = true
+
+  override def whenDone: Option[(Input[A],S)] = Some((rest,s))
+
+  override def toString = "Done(%s, %s)".format(rest.toString,s.toString)
+}
+
+object Done
+{
+
+  def apply[A,S](rest:Input[A], s:S) = new Done(rest,s)
+
+  def unapply[A,S](x:MyIteratee[A,S]) = x.whenDone
 
 }
 
