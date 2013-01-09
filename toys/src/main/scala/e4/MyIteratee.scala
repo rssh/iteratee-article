@@ -26,6 +26,8 @@ trait MyIteratee[A,S]
 
   def andThen(x: MyIteratee[A,S]) = Compose(this,x)
  
+  def map[B](f: B=>A) = MyEnumeratee.map(f).transform(this)
+
 }
 
 

@@ -54,19 +54,6 @@ trait MyIteratee[A,S]
 
 }
 
-/**
-case class Done[A,S](rest: Input[A], s: S) extends MyIteratee[A,S]
-{
-
-  def next(inp: Input[A]) = this
-
-  override def isDone: Boolean = true
-
-  override def whenDone: Option[(Input[A],S)] = Some((rest,s))
-
-}
-**/
-
 class Done[A,S](rest: Input[A], s:S) extends MyIteratee[A,S]
 {
 
